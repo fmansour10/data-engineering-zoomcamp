@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from calendar import month
-from sys import prefix
+
 import pandas as pd
-from sqlalchemy import create_engine
+import pyarrow.parquet as pq
+import pyarrow.fs as fs
+from sqlalchemy import create_engine, table
 from tqdm.auto import tqdm
+import click
+
 
 dtype = {
     "VendorID": "Int64",
@@ -25,28 +28,76 @@ dtype = {
     "total_amount": "float64",
     "congestion_surcharge": "float64"
 }
-
+'''
 parse_dates = [
     "tpep_pickup_datetime",
     "tpep_dropoff_datetime"
 ]
+'''
+@click.command()
+@click.option('--pg-user', default='root', help='PostgreSQL user')
+@click.option('--pg-pass', default='root', help='PostgreSQL password')
+@click.option('--pg-host', default='localhost', help='PostgreSQL host')
+@click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
+@click.option('--pg-db', default='ny_taxi', help='PostgreSQL database name')
+@click.option('--year', default=2021, type=int, help='Year of the data to ingest')
+@click.option('--month', default=1, type=int, help='Month of the data to ingest')
+@click.option('--chunksize', default=100000, type=int, help='Number of rows per chunk to ingest')
+@click.option('--target-table', default='yellow_taxi_data', help='Target table name')
+def run(pg_user, pg_pass, pg_host, pg_port, pg_db, year, month, chunksize, target_table):
+    pg_user = pg_user
+    pg_pass = pg_pass
+    pg_host = pg_host
+    pg_port = pg_port
+    pg_db = pg_db
+    year = year
+    month = month
 
-def run():
-    pg_user = 'root'
-    pg_pass = 'root'
-    pg_host = 'localhost'
-    pg_port = 5432
-    pg_db = 'ny_taxi'
+    target_table = target_table
+    chunksize = chunksize
+    
+    '''    # Parquet file URL
+    url = "https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet"
 
-    year = 2021
-    month = 1
+    engine = create_engine(
+        f'postgresql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}'
+    )
 
-    target_table = "yellow_taxi_data"
-    chunksize = 100000
+    # Read parquet (HTTPS supported automatically)
+    df = pd.read_parquet(url, engine="pyarrow")
 
+    # Optional: chunk manually for large files
+    first = True
+
+    for i in tqdm(range(0, len(df), chunksize)):
+        df_chunk = df.iloc[i:i+chunksize]
+
+        if first:
+            df_chunk.head(0).to_sql(
+                name=target_table,
+                con=engine,
+                if_exists="replace",
+                index=False
+            )
+            first = False
+            print("Table created")
+
+        df_chunk.to_sql(
+            name=target_table,
+            con=engine,
+            if_exists="append",
+            index=False,
+            method="multi",
+            chunksize=chunksize
+        )
+    '''
+
+    ## CSV Processing
     # Read a sample of the data
-    prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
-    url = f'{prefix}yellow_tripdata_{year}-{month:02d}.csv.gz'
+    # prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
+    # url = f'{prefix}yellow_tripdata_{year}-{month:02d}.csv.gz'
+
+    url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv'
     
     # Create a connection to the Postgres database
     engine = create_engine(f'postgresql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}')
@@ -55,7 +106,7 @@ def run():
     df_iter = pd.read_csv(
         url, 
         dtype=dtype, 
-        parse_dates=parse_dates,
+        #parse_dates=parse_dates,
         iterator=True,
         chunksize=chunksize,
     )
@@ -81,6 +132,7 @@ def run():
             con=engine,
             if_exists="append"
         )
+    
 
 
 
