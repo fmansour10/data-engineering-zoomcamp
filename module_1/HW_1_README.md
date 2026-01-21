@@ -1,5 +1,7 @@
 # Module 1 Homework: Docker & SQL
 
+**Note: My answers are in bold**
+
 ## Question 1. Understanding Docker images
 
 Run docker with the `python:3.13` image. Use an entrypoint `bash` to interact with the container.
@@ -54,10 +56,7 @@ volumes:
 - postgres:5432
 - **db:5432** 
 
-When containers are in the same Docker Compose network, they can communicate using service names as hostnames.
-`db` is the name of the service in the first half of docker-compose.yaml. 
-`5433` is the port on the host machine (localhost)
-`5432` indicates the port inside the container network.
+**When containers are in the same Docker Compose network, they can communicate using service names as hostnames. `db` is the name of the service in the first half of docker-compose.yaml. `5433` is the port on the host machine (localhost) `5432` indicates the port inside the container network.**
 
 If multiple answers are correct, select any 
 
@@ -71,6 +70,7 @@ For the trips in November 2025 (lpep_pickup_datetime between '2025-11-01' and '2
 - 8,254
 - 8,421
 
+**SQL used:**
 ```sql
 select count(1) from 
 yellow_taxi_trips_2025_11
@@ -89,6 +89,7 @@ Use the pick up time for your calculations.
 - 2025-11-23
 - 2025-11-25
 
+**SQL Used:**
 ```sql
 select lpep_pickup_datetime, MAX(trip_distance)
 from yellow_taxi_trips_2025_11
@@ -108,6 +109,7 @@ Which was the pickup zone with the largest `total_amount` (sum of all trips) on 
 - Morningside Heights
 - Forest Hills
 
+**SQL Used:**
 ```sql
 select tz."LocationID", tz."Zone", SUM(t."total_amount") from
 taxi_zones tz
@@ -129,6 +131,7 @@ Note: it's `tip` , not `trip`. We need the name of the zone, not the ID.
 - East Harlem North
 - LaGuardia Airport
 
+**SQL Used:**
 ```sql
 select tz2."LocationID", tz2."Zone", MAX(t."tip_amount") from
 yellow_taxi_trips_2025_11 t
