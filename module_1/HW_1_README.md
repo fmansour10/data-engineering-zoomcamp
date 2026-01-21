@@ -8,7 +8,7 @@ Run docker with the `python:3.13` image. Use an entrypoint `bash` to interact wi
 
 What's the version of `pip` in the image?
 
-- **25.3** I arrived at this answer by running `pipeline $ docker run --rm python:3.13 pip --version`
+- **25.3 I arrived at this answer by running `pipeline $ docker run --rm python:3.13 pip --version`**
 - 24.3.1
 - 24.2.1
 - 23.3.1
